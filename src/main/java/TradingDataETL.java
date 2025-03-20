@@ -2,6 +2,13 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.Dataset;
+import proto.TradingData.TradingDataProto.TradingData;
+
 // Configuration loader class
 class ConfigLoader {
     public static Config loadConfig(String filePath) {
@@ -75,13 +82,36 @@ class Deduplicator {
     }
 }
 
+
 class ProtoConverter {
     public static void convertAndSave(Dataset<Row> data, String outputPath) {
         data.foreach(row -> {
-            // Convert row to Protocol Buffers message and write to output
-            // TradingDataProto.TradingData proto = ...;
-            // Save proto to outputPath
+            TradingData proto = convertRowToProto(row);
+            saveProtoToFile(proto, outputPath);
         });
+    }
+
+    private static TradingData convertRowToProto(Row row) {
+        return TradingData.newBuilder()
+                .setTransactionID(row.getAs("TransactionID"))
+                .setDate(row.getAs("Date"))
+                .setTime(row.getAs("Time"))
+                .setStockSymbol(row.getAs("StockSymbol"))
+                .setAction(row.getAs("Action"))
+                .setQuantity(row.getAs("Quantity"))
+                .setPrice(row.getAs("Price"))
+                .setName(row.getAs("Name"))
+                .setKerboros(row.getAs("Kerboros"))
+                .setComments(row.getAs("Comments"))
+                .build();
+    }
+
+    private static void saveProtoToFile(TradingData proto, String outputPath) {
+        try (FileOutputStream output = new FileOutputStream(outputPath, true)) {
+            proto.writeTo(output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 

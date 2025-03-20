@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message TradingData {
+  int32 transactionID = 1;
+  string date = 2;
+  string time = 3;
+  string stockSymbol = 4;
+  string action = 5;
+  int32 quantity = 6;
+  double price = 7;
+  string name = 8;
+  string kerberos = 9;
+  string comments = 10;
+}
